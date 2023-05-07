@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Billing Counter</title>
+    <style>
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .total {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Billing Counter</h1>
+    <div id="bill"></div>
+    <script>
+      const socket = new WebSocket(
+        "ws://localhost:3000?client-type=Billing-Counter"
+      );
+
+      socket.addEventListener("open", (event) => {
+        console.log("Connected to WebSocket server as billing counter.");
+        console.log("WebSocket connection established:", event);
+      });
+
+      socket.addEventListener("message", (message) => {
+        const bill = JSON.parse(message.data);
+        const items = bill.items.map(
+          (item) =>
+            `<tr><td>${item.name}</td><td>${item.price}</td><td>${
+              item.quantity
+            }</td><td>${item.price * item.quantity}</td></tr>`
+        );
+        const subtotal = `<tr><td colspan="3">Subtotal:</td><td>${bill.subtotal}</td></tr>`;
+        const tax = `<tr><td colspan="3">Tax:</td><td>${bill.tax}</td></tr>`;
+        const total = `<tr class="total"><td colspan="3">Total:</td><td>${bill.total}</td></tr>`;
+        const billHtml = `<table>${items.join(
+          ""
+        )}${subtotal}${tax}${total}</table>`;
+        document.getElementById("bill").innerHTML = billHtml;
+      });
+    </script>
+  </body>
+</html>
